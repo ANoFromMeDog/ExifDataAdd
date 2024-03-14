@@ -354,14 +354,6 @@ class ImageApp(tk.Tk):
             self.info_label.config(text="Photos Completed Please Select a New Read Directory")
             
 
-            
-
-        
-        
-        
-        
-
-
 def button_click(event=None):
     focused_widget = app.focus_get()
     if isinstance(focused_widget, tk.Button):
