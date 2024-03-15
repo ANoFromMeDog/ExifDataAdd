@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from PIL import Image, ImageTk
-import datetime
+from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
 import piexif
@@ -294,8 +294,7 @@ class ImageApp(tk.Tk):
             self.month = int(month)
             self.year = int(year)
             # Create a datetime object with the provided year, month, and day
-            date_obj = datetime.datetime(
-                self.year, self.month, self.day, 12, 0, 0)
+            date_obj = datetime(self.year, self.month, self.day, 12, 0, 0)
 
         # Format the datetime object as a string in the desired format
             self.date = date_obj.strftime('%Y:%m:%d %H:%M:%S')
@@ -307,9 +306,21 @@ class ImageApp(tk.Tk):
             self.year = -1
             return False
 
-    def verify_dir(self, path):
+    def verify_create_dir(self, path):
         Path(path).mkdir(parents=True, exist_ok=True)
         return
+    
+    def verify_create_unique_save_path(self,path):
+        new_save_path=path
+        if(os.path.exists(new_save_path)):
+            tk.messagebox.showerror("Error", "Renamed Image Copy")
+            index=1
+            base_name, extension = os.path.splitext(path)
+            while(os.path.exists(new_save_path)):
+                new_save_path = f"{base_name}{index}{extension}"
+                index += 1
+
+        return new_save_path
 
     def write_exif(self):
         if (not self.dir_read_path_good):
@@ -338,31 +349,31 @@ class ImageApp(tk.Tk):
         if (not self.create_date(year, month, day)):
             self.info_label.config(text="Please Input a Valid Date")
             return
-
-        zeroth_ifd = {
+        
+        exif_dict={
+            "0th": {
             piexif.ImageIFD.Make: u"FUJIFILM",
             piexif.ImageIFD.Model: u"XS5",
             piexif.ImageIFD.DateTime: self.date,
             piexif.ImageIFD.XResolution: (self.image.width, 1),
             piexif.ImageIFD.YResolution: (self.image.height, 1),
             piexif.ImageIFD.Software: u"emexifadd"
-        }
-        exif_ifd = {
+            },
+            "Exif": {
             piexif.ExifIFD.DateTimeOriginal: self.date,
             piexif.ExifIFD.DateTimeDigitized: self.date,
+            }
         }
-
-        exif_dict = {"0th": zeroth_ifd, "Exif": exif_ifd}
         exif_data_bytes = piexif.dump(exif_dict)
-        self.verify_dir(
+        self.verify_create_dir(
             f"{self.dir_save_path}/{self.year}/{str(self.month).zfill(2)}")
         path = f"{self.dir_save_path}/{self.year}/{str(self.month).zfill(2)}/{
             os.path.basename(self.files[self.file_index])}"
 
+        path=self.verify_create_unique_save_path(path)
+
         self.image.save(path)
         piexif.insert(exif=exif_data_bytes, image=path)
-        # Write Complete increment to next image if available
-        # https://piexif.readthedocs.io/en/latest/functions.html#insert
         self.pop_file()
         self.clear_image_information()
 
