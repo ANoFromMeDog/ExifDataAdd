@@ -309,14 +309,14 @@ class ImageApp(tk.Tk):
     def verify_create_dir(self, path):
         Path(path).mkdir(parents=True, exist_ok=True)
         return
-    
-    def verify_create_unique_save_path(self,path):
-        new_save_path=path
-        if(os.path.exists(new_save_path)):
+
+    def verify_create_unique_save_path(self, path):
+        new_save_path = path
+        if (os.path.exists(new_save_path)):
             tk.messagebox.showerror("Error", "Renamed Image Copy")
-            index=1
+            index = 1
             base_name, extension = os.path.splitext(path)
-            while(os.path.exists(new_save_path)):
+            while (os.path.exists(new_save_path)):
                 new_save_path = f"{base_name}{index}{extension}"
                 index += 1
 
@@ -349,19 +349,19 @@ class ImageApp(tk.Tk):
         if (not self.create_date(year, month, day)):
             self.info_label.config(text="Please Input a Valid Date")
             return
-        
-        exif_dict={
+
+        exif_dict = {
             "0th": {
-            piexif.ImageIFD.Make: u"FUJIFILM",
-            piexif.ImageIFD.Model: u"XS5",
-            piexif.ImageIFD.DateTime: self.date,
-            piexif.ImageIFD.XResolution: (self.image.width, 1),
-            piexif.ImageIFD.YResolution: (self.image.height, 1),
-            piexif.ImageIFD.Software: u"emexifadd"
+                piexif.ImageIFD.Make: u"FUJIFILM",
+                piexif.ImageIFD.Model: u"XS5",
+                piexif.ImageIFD.DateTime: self.date,
+                piexif.ImageIFD.XResolution: (self.image.width, 1),
+                piexif.ImageIFD.YResolution: (self.image.height, 1),
+                piexif.ImageIFD.Software: u"emexifadd"
             },
             "Exif": {
-            piexif.ExifIFD.DateTimeOriginal: self.date,
-            piexif.ExifIFD.DateTimeDigitized: self.date,
+                piexif.ExifIFD.DateTimeOriginal: self.date,
+                piexif.ExifIFD.DateTimeDigitized: self.date,
             }
         }
         exif_data_bytes = piexif.dump(exif_dict)
@@ -370,7 +370,7 @@ class ImageApp(tk.Tk):
         path = f"{self.dir_save_path}/{self.year}/{str(self.month).zfill(2)}/{
             os.path.basename(self.files[self.file_index])}"
 
-        path=self.verify_create_unique_save_path(path)
+        path = self.verify_create_unique_save_path(path)
 
         self.image.save(path)
         piexif.insert(exif=exif_data_bytes, image=path)
